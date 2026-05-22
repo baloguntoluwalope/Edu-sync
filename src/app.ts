@@ -41,12 +41,19 @@ const app = express();
 
 // ─── Security & Parsing ──────────────────────────────────────────────────────
 app.use(helmet());
-app.use(
-  cors({
-    origin: env.isProd ? [env.FRONTEND_URL] : '*',
-    credentials: true,
-  })
-);
+
+ const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'https://edu-sync-am2a.onrender.com',
+  'https://api.edusync.ng'
+];
+
+cors({
+  origin: allowedOrigins,
+  credentials: true,
+});
+
 app.use(
   morgan(env.isProd ? 'combined' : 'dev', {
     stream: { write: (msg) => logger.info(msg.trim()) },
