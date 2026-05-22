@@ -1,27 +1,18 @@
-import nodemailer from 'nodemailer';
+import axios from 'axios';
 import { env } from './env';
 import { logger } from './logger';
 
-export const transporter = nodemailer.createTransport({
-  host: env.BREVO_SMTP_HOST,
-  port: env.BREVO_SMTP_PORT,
-  secure: false, // TLS on port 587
-  auth: {
-    user: env.BREVO_SMTP_USER,
-    pass: env.BREVO_SMTP_PASS,
-  },
-  pool: true,         // reuse connections
-  maxConnections: 5,
-  maxMessages: 100,
-});
+const BREVO_API_BASE = 'https://api.brevo.com/v3';
 
-// Verify connection on startup
 export const verifyMailer = async (): Promise<void> => {
   try {
-    await transporter.verify();
-    logger.info('✅ Brevo SMTP connected');
+    const res = await axios.get(`${BREVO_API_BASE}/account`, {
+      headers: { 'api-key': env.BREVO_API_KEY },
+    });
+    const email = res?.data?.email;
+    logger.info(`✅ Brevo API connected — account: ${email ?? 'unknown'}`);
   } catch (err) {
-    logger.error('❌ Brevo SMTP connection failed:', err);
+    logger.error('❌ Brevo API connection failed:', err);
   }
 };
 
@@ -32,13 +23,23 @@ export const sendEmail = async (
   replyTo?: string
 ): Promise<boolean> => {
   try {
-    await transporter.sendMail({
-      from: `"${env.BREVO_FROM_NAME}" <${env.BREVO_FROM_EMAIL}>`,
-      to: Array.isArray(to) ? to.join(', ') : to,
+    const recipients = (Array.isArray(to) ? to : [to]).map((email) => ({ email }));
+
+    const payload = {
+      sender: { name: env.BREVO_FROM_NAME, email: env.BREVO_FROM_EMAIL },
+      to: recipients,
       subject,
-      html,
-      replyTo: replyTo || env.BREVO_FROM_EMAIL,
+      htmlContent: html,
+      replyTo: { email: replyTo ?? env.BREVO_FROM_EMAIL },
+    };
+
+    await axios.post(`${BREVO_API_BASE}/smtp/email`, payload, {
+      headers: {
+        'api-key': env.BREVO_API_KEY,
+        'Content-Type': 'application/json',
+      },
     });
+
     logger.info(`✉️  Email sent → ${Array.isArray(to) ? to.join(', ') : to} | ${subject}`);
     return true;
   } catch (err) {

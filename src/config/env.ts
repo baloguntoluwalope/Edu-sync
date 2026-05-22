@@ -20,6 +20,7 @@ export const env = {
 
   // Brevo SMTP
   BREVO_API_KEY: process.env.BREVO_API_KEY || 'smtp-relay.brevo.com',
+  BREVO_SMTP_HOST: process.env.BREVO_SMTP_HOST || 'smtp-relay.brevo.com',
   BREVO_SMTP_PORT: parseInt(process.env.BREVO_SMTP_PORT || '587'),
   BREVO_SMTP_USER: required('BREVO_SMTP_USER'),
   BREVO_SMTP_PASS: required('BREVO_SMTP_PASS'),
