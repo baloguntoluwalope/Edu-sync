@@ -19,7 +19,7 @@ export const env = {
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
 
   // Brevo SMTP
-  BREVO_SMTP_HOST: process.env.BREVO_SMTP_HOST || 'smtp-relay.brevo.com',
+  BREVO_API_KEY: process.env.BREVO_API_KEY || 'smtp-relay.brevo.com',
   BREVO_SMTP_PORT: parseInt(process.env.BREVO_SMTP_PORT || '587'),
   BREVO_SMTP_USER: required('BREVO_SMTP_USER'),
   BREVO_SMTP_PASS: required('BREVO_SMTP_PASS'),

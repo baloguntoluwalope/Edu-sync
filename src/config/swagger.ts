@@ -46,13 +46,13 @@ Authorization: Bearer <token>
     },
     servers: [
       {
-        url: `http://localhost:${env.PORT}/api/v1`,
-        description: 'Development Server',
+        url: env.APP_URL ? `${env.APP_URL}/api/v1` : `http://localhost:${env.PORT}/api/v1`,
+        description: env.isProd ? 'Production Server' : 'Development Server',
       },
-      {
-        url: 'https://api.edusync.ng/api/v1',
-        description: 'Production Server',
-      },
+      // Always expose both so users can switch in the Swagger UI
+      ...(env.isProd
+        ? [{ url: `http://localhost:${env.PORT}/api/v1`, description: 'Local Development' }]
+        : [{ url: 'https://api.edusync.ng/api/v1', description: 'Production Server' }]),
     ],
     components: {
       securitySchemes: {
@@ -64,7 +64,7 @@ Authorization: Bearer <token>
         },
       },
       schemas: {
-        // ─── SUCCESS RESPONSE ───────────────────────────────────────────
+        // ─── COMMON ──────────────────────────────────────────────────────
         SuccessResponse: {
           type: 'object',
           properties: {
@@ -308,14 +308,8 @@ Authorization: Bearer <token>
             qualification: { type: 'string', example: 'B.Ed Mathematics' },
             specialization: { type: 'string', example: 'Mathematics' },
             yearsOfExperience: { type: 'integer', example: 5 },
-            assignedClassIds: {
-              type: 'array',
-              items: { type: 'string' },
-            },
-            assignedSubjectIds: {
-              type: 'array',
-              items: { type: 'string' },
-            },
+            assignedClassIds: { type: 'array', items: { type: 'string' } },
+            assignedSubjectIds: { type: 'array', items: { type: 'string' } },
           },
         },
 
@@ -327,10 +321,7 @@ Authorization: Bearer <token>
             schoolId: { type: 'string' },
             branchId: { type: 'string' },
             name: { type: 'string', example: 'JSS3' },
-            category: {
-              type: 'string',
-              enum: ['KG', 'Nursery', 'Primary', 'JSS', 'SSS'],
-            },
+            category: { type: 'string', enum: ['KG', 'Nursery', 'Primary', 'JSS', 'SSS'] },
             formTeacherId: { type: 'string', nullable: true },
             studentIds: { type: 'array', items: { type: 'string' } },
             isActive: { type: 'boolean' },
@@ -488,12 +479,6 @@ Authorization: Bearer <token>
           },
         },
 
-        
-// tags: [
-      // { name: 'ID Cards', description: 'ID card generation and printing — ₦300 per card' },
-      // { name: 'Non-Teaching Staff', description: 'Non-teaching staff management with QR attendance' },
-      // Ensure there is a comma between these objects and they are inside the tags array
-    // ],
         // ─── SUBSCRIPTION ────────────────────────────────────────────────
         InitPaymentInput: {
           type: 'object',
@@ -528,15 +513,13 @@ Authorization: Bearer <token>
       { name: 'Offline Sync', description: 'Offline data sync' },
       { name: 'SuperAdmin', description: 'Platform-wide management' },
       { name: 'ID Cards', description: 'ID card generation and printing — ₦300 per card' },
-{ name: 'Non-Teaching Staff', description: 'Non-teaching staff management with QR attendance' },
+      { name: 'Non-Teaching Staff', description: 'Non-teaching staff management with QR attendance' },
     ],
   },
-  
   apis: [
-  './src/modules/**/*.routes.ts',
-  './src/modules/**/*.swagger.ts',
-],
-  // apis: ['./src/modules/**/*.routes.ts', './src/modules/**/*.swagger.ts'],
+    './src/modules/**/*.routes.ts',
+    './src/modules/**/*.swagger.ts',
+  ],
 };
 
 export const swaggerSpec = swaggerJsdoc(options);
